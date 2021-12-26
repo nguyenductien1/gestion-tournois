@@ -1,0 +1,80 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block body %}
+<style>
+    .row.choose-event-row{
+        margin-top: 30px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .form-event{
+        margin-left: 30px;
+    }
+    .btn-create-event{
+        margin-right: 30px;
+    }
+    #start-date{
+        margin-right: 10px;
+        margin-left: 5px;
+    }
+    #end-date{
+        margin-left: 5px;
+    }
+    
+</style>
+<div class="container-fluid">
+    <form class="form-event">
+            <div class="form-group">
+                <label for="event-name">Nom événement</label>
+                <input type="text" class="form-control" id="event-name" placeholder="Volley-ball Montpellier">
+            </div>
+            <div class="input-group">
+                <label for="start-date">Date début:</label>
+                <input type="date" class="form-control" id="start-date" min="2021-06-07">
+            
+                <label for="end-date">Date terminé: </label>
+                <input type="date" class="form-control" id="end-date">
+            </div>
+            <div class="form-group">
+                <label for="type-game">Type game</label>
+                <select class="form-control" id="type-game">
+                    <option>--------</option>
+                    {% for type in types %}
+                    <option value="{{ type.id }}">{{ type.type }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="row">
+                <div class="form-group btn-create-event">
+                    <buton type="button" class="btn btn-primary" id="create-event">Créer</button>
+                </div>
+            </div>
+    </form>
+</div>
+<script type="text/javascript">
+$('#create-event').click(function(){
+    var nomEvent = $('#event-name').val();
+    var dateDebut = $('#start-date').val();
+    var dateTermn = $('#end-date').val();
+    var typeJeuId = $('#type-game').val();
+    var dataSent = JSON.stringify({nomEvent: nomEvent, dateDebut: dateDebut, dateTermn: dateTermn, typeJeuId: typeJeuId})
+    $.ajax({
+        method: "POST",
+        url: "/admin/create/event", 
+        data: dataSent, 
+        dataType: "json",
+        contentType: "application/json; charset=utf-8",
+        success: function (data, textStatus, xhr){
+            window.location.href = "/admin/gestion";
+        }
+      })
+})
+
+
+</script>
+
+
+
+{% endblock %}

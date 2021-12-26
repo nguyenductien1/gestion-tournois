@@ -1,0 +1,238 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Admin: {{ tournoi.nomTournoi }}{% endblock %}
+
+{% block body %}
+<style>
+.make-line{
+    border: 2px solid;
+    border-color: red;
+}
+.list-group{
+    max-height: 200px;
+    margin-bottom: 10px;
+    overflow:scroll;
+    -webkit-overflow-scrolling: touch;
+}
+ul.connectedSortable {
+    -moz-column-count: 4;
+    -moz-column-gap: 20px;
+    -webkit-column-count: 4;
+    -webkit-column-gap: 20px;
+    column-count: 4;
+    column-gap: 20px;
+    border: 1px solid;
+    list-style-type: none;
+}
+
+
+.tournoi-id{
+    visibility: hidden;
+}
+.btn-delete-tour {
+    padding: Opx; !important;
+    line-height:1;
+}
+li span .equipe-name{float: left;}
+li span .delete-button{float: right;}
+</style>
+
+<div class="tournoi-id">{{ tournoi.id }}</div>
+<div class="container">
+    <div class="row"> <h4>Listes des équipes dans tournoi:</h4>
+    </div>
+    <div class="row">
+        <ul class="connectedSortable sortable">
+            {% for equipe in tournoi.equipes %}
+            <li class="ui-state-default" eq-id="{{equipe.id}}"><span class="equipe-name">{{ equipe.nomEquipe }}</span>
+            <a href="#" eq-id="{{equipe.id}}" class="btn-delete-equipe-tournoi" ><span  class="span-delete-button fas fa-trash-alt"></span></a>
+            </li>
+            {% endfor %}  
+        </ul>
+    </div> 
+    <div class="row"> 
+        <div class="col-lg-3">
+            <label for="club">Choisir club:</label>
+                <select name="club" id="club-select">
+                    <option value="">---------</option>
+                    {# Reserver pour les options #}
+                </select>
+        </div>
+        <div class="col-lg-3">
+            <label for="equipe">Choisir equipe:</label>
+                <select name="equipe" id="equipe-select">
+                    <option value="">----------</option>
+                    {# Reserver pour les options #}
+                </select>
+        </div>
+        <div class="col-lg-3">
+            <button class="btn btn-outline-secondary btn-add-equipe-tournoi">Ajouter</button>
+        </div>
+        <div class="col-lg-3">
+            <a href="/admin/inscription">Ou Créer Equipe</a>
+        </div>
+    </div>    
+        <div class="row make-line"></div>
+        <div class="list-tours">
+        <h2 class="row tours-title">Tours: </h2> 
+        {% for tour in tours %}
+            <div class="row tours">
+                <h3 class="col-lg-5">{{ tour.nomTour }}</h3>
+                <button class="btn-edit-tour col-lg-1 col-sm-12 col-md-1 btn-success inline-button fas fa-edit" id-tour="{{ tour.id }}"></button>
+                <button class="btn-update-equipes col-lg-1 col-sm-12 col-md-1 btn-success inline-button fas fa-sync" id-tour="{{ tour.id }}"></button>
+                <button class="btn-delete-tour col-lg-1 col-sm-12 col-md-1 btn-danger inline-button fas fa-trash-alt" id-tour="{{ tour.id }}"></button>
+            
+                <ul class="connectedSortable sortable">
+                    {% for equipe in tour.equipe %}
+                    <li class="ui-state-default" eq-id="{{ equipe.id }}">{{ equipe.nomEquipe }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endfor %} 
+        </div>
+            <div class="row btn-add-tour-class">
+                <div class="new-tournoi-name input-group mb-3 col-lg-10">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" id="tour-name-prefix">Nom Tour</span>
+                    </div>
+                    <input type="text" class="form-control" aria-label="Nom tour" aria-describedby="tour-name" id="new-tour-name" placeholder="Ex: Tour début">
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary btn-add-tour" type="button">Ajouter</button>
+                    </div>
+                </div>  
+            </div>
+</div>
+<script>
+
+//Chargement des clubs on load
+$(document).ready(function(){
+    $.ajax({
+        method: "GET",
+        url: "/admin/get/clubs",  
+        dataType: "json",
+        contentType: "application/json; charset=utf-8",
+        success: function (data, textStatus, xhr){
+            for (i=0; i < data.length; i++){
+                $('#club-select').append(new Option(data[i]['nomClub'], data[i]['id'])
+            )
+            }
+        }
+    })
+})
+//Récupérer les equipe dans le club choisi
+$('#club-select').on('change', function(){
+    var clubId = this.value;
+    console.log("/admin/get/clubs/"+clubId)
+    $.ajax({
+        method: "GET",
+        url: "/admin/get/clubs/"+clubId,  
+        dataType: "json",
+        contentType: "application/json; charset=utf-8",
+        success: function (data, textStatus, xhr){
+            $('#equipe-select').empty();
+            for (i=0; i < data.length; i++){
+                $('#equipe-select').append(new Option(data[i]['nomEquipe'], data[i]['id'])
+            )
+            }
+        }
+    })
+})
+//Ajouter un équipe dans un tournoi
+$('.btn-add-equipe-tournoi').click(function(){
+    var equipeId = $('#equipe-select').val();
+    var tournoiId = $('.tournoi-id').text();
+    let dataSent = JSON.stringify({tournoiId: tournoiId, equipeId: equipeId});
+    $.ajax({
+        method: "PATCH",
+        url: "/admin/tournoi/equipe/add", 
+        data: dataSent, 
+        dataType: "json",
+        contentType: "application/json; charset=utf-8",
+        success: function (data, textStatus, xhr){
+            location.reload();
+        }
+    })
+})
+
+//Ajouter un tour dans un tournoi.
+$('.btn-add-tour').click(function(){
+    var tournoiId = $('.tournoi-id').text();
+    var nomTour = $('#new-tour-name').val();
+    let dataSent = JSON.stringify({tournoiId: tournoiId, nomTour: nomTour});
+    $.ajax({
+        method: "POST",
+        url: "/admin/tour", 
+        data: dataSent, 
+        dataType: "json",
+        contentType: "application/json; charset=utf-8",
+        success: function (data, textStatus, xhr){
+            location.reload();
+        }
+    })
+})
+
+//Delete un tour dans un tournoi.
+$('.btn-delete-tour').click(function(){
+    var tournoiId = $('.tournoi-id').text();
+    var tourId = $(this).attr('id-tour');
+    let dataSent = JSON.stringify({tournoiId: tournoiId, tourId: tourId});
+    $.ajax({
+        method: "DELETE",
+        url: "/admin/tour/"+tourId, 
+        data: dataSent, 
+        dataType: "json",
+        contentType: "application/json; charset=utf-8",
+        success: function (data, textStatus, xhr){
+            location.reload();
+        }
+    })
+})
+
+//Update les equipes dans tour.
+$('.btn-update-equipes').click(function(){
+    var listEquipes = $(this).parent().find('ul').find('li');
+    var listEquipeID = [];
+    var tourId = $(this).attr('id-tour');
+    for (i=0; i<listEquipes.length; i++){
+        listEquipeID.push($(listEquipes[i]).attr('eq-id'));
+    }
+    let dataSent = JSON.stringify({eqIDs: listEquipeID});
+    $.ajax({
+        method: "PATCH",
+        url: "/admin/tour/"+tourId, 
+        data: dataSent, 
+        dataType: "json",
+        contentType: "application/json; charset=utf-8",
+        success: function (data, textStatus, xhr){
+            location.reload();
+        }
+    })
+
+    console.log(listEquipeID)
+})
+//Edit tour
+$('.btn-edit-tour').click(function(){
+    var tourId = $(this).attr('id-tour');
+    window.location.href = "/admin/gestion/edit/tour/"+tourId;
+})
+$('.btn-delete-equipe-tournoi').click(function(){
+    let equipeId = $(this).attr('eq-id');
+    var tournoiId = $('.tournoi-id').text();
+    let dataSent = JSON.stringify({tournoiId: tournoiId, equipeId: equipeId});
+    $.ajax({
+        method: "DELETE",
+        url: "/admin/tournoi/equipe/delete", 
+        data: dataSent, 
+        dataType: "json",
+        contentType: "application/json; charset=utf-8",
+        success: function (data, textStatus, xhr){
+            location.reload();
+        }
+    })
+
+})
+
+
+</script>
+
+{% endblock %}

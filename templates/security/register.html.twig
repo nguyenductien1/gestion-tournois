@@ -1,0 +1,124 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tournois: Register{% endblock %}
+
+{% block body %}
+<style>
+    * {
+  box-sizing: border-box;
+}
+
+/* Add padding to containers */
+.container {
+  padding: 16px;
+  background-color: white;
+}
+
+/* Full-width input fields */
+input[type=text], input[type=password] {
+  width: 100%;
+  padding: 15px;
+  margin: 5px 0 22px 0;
+  display: inline-block;
+  border: none;
+  background: #f1f1f1;
+}
+
+input[type=text]:focus, input[type=password]:focus {
+  background-color: #ddd;
+  outline: none;
+}
+
+/* Overwrite default styles of hr */
+hr {
+  border: 1px solid #f1f1f1;
+  margin-bottom: 25px;
+}
+
+/* Set a style for the submit button */
+.registerbtn {
+  background-color: #04AA6D;
+  color: white;
+  padding: 16px 20px;
+  margin: 8px 0;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  opacity: 0.9;
+}
+
+.registerbtn:hover {
+  opacity: 1;
+}
+
+/* Add a blue text color to links */
+a {
+  color: dodgerblue;
+}
+.check-user, .check-password{
+    color: red;
+    visibility: hidden;
+}
+
+/* Set a grey background color and center the text of the "sign in" section */
+.signin {
+  background-color: #f1f1f1;
+  text-align: center;
+}
+</style>
+<form name="registerForm" method="post">
+  <div class="container">
+    <h1>Register</h1>
+    <p>Veillez remplir pour enregistrer.</p>
+    <hr>
+
+    <label for="email"><b>Email</b></label>
+    <input type="text" placeholder="Enter Email" name="email" id="email" required>
+    <div class="check-user">Utilisateur déjà existant</div>
+
+    <label for="psw"><b>Mots de passe</b></label>
+    <input type="password" placeholder="Enter Password" name="psw" id="psw" required>
+
+    <label for="psw-repeat"><b>Répeter mots de passe</b></label>
+    <input type="password" placeholder="Repeat Password" name="psw-repeat" id="psw-repeat" required>
+    <hr>
+    <div class="check-password">Mots de passe ne coressponsent pas</div>
+    <button type="button" class="registerbtn" onclick="submitForm()">Register</button>
+  </div>
+  
+  <div class="container signin">
+    <p>Vous avez déjà un compte? <a href="/login">Sign in</a>.</p>
+  </div>
+</form>
+</div>
+
+<script type="text/javascript" >
+    function submitForm(){
+        var registedData = JSON.stringify($("form").serializeArray());
+        if ($('#psw-repeat').val()==$('#psw').val()){
+            $.ajax({
+            type: "POST",
+            url: "/auth/register", 
+            data: registedData, 
+            dataType: "json",
+            contentType: "application/json",
+            success: function (data, textStatus, xhr) {// success callback function
+                console.log(xhr.status);
+                if (xhr.status == 203){
+                    document.querySelector('.check-user').style.visibility = 'visible'}
+                
+                if (xhr.status == 201){
+                    window.location.href = "/login";
+                    alert("Utilisateur " + data['user_created'] + " créé");
+                }       
+            }
+        })
+        }
+        else {
+            document.querySelector('.check-password').style.visibility = 'visible'};
+        }
+        
+</script>
+
+
+{% endblock %}

@@ -1,0 +1,244 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Admin tour: {{ tour.nomTour }}{% endblock %}
+
+
+{% block body %}
+<style>
+.tour{
+    width: 40%;
+}
+.poule{
+    width: 60%;
+}
+.tour-id{
+    visibility:hidden;
+}
+ul.connectedSortable {
+    list-style-type: none;
+    border: 1px solid;
+}
+
+</style>
+<div class="tour-id">{{ tour.id }}</div>
+<div class="contrainer">
+
+    <div class="float-left tour">
+        <div class="container nom-tour">
+            <h3> {{ tour.nomTour}} </h3>
+        </div>
+        <div class="container row-equipes-tour">
+                <ul class="connectedSortable sortable">
+                    {% for equipe in tour.equipe %}
+                    <li class="ui-state-default" eq-id= {{ equipe.id }}>{{ equipe.nomEquipe }} - {{ equipe.niveauEquipe }}</li>
+                    {% endfor %}
+                </ul>
+                <div class="row row-btn-tour-update">
+                    <button type="button" class="col-lg-3 btn btn-success btn-update-poules">Update Poules</button>
+                    <button type="button" class="col-lg-3 btn btn-danger btn-delete-poules">Supprimer Poules</button>
+                    <button type="button" class="col-lg-3 btn btn-warning btn-generer-jeux">Générer Jeux</button>
+                </div>
+                <div class="row row-create-poule">
+                    <div class="new-poule-name input-group mb-3 col-lg-10">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="poule-name-prefix">Nom Poule</span>
+                        </div>
+                        <input type="text" class="form-control" aria-label="Nom Poule" aria-describedby="poule-name" id="new-poule-name" placeholder="Ex: poule A">
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary btn-add-poule" type="button">Ajouter</button>
+                        </div>
+                </div>  
+                </div>
+        </div> 
+        
+    </div>
+    
+    <div class="float-right poule">
+    {% for poule in tour.poules %}
+        <div class="container nom-poule">
+            <div>
+                <h4> {{ poule.nomPoule }} </h4>
+                <input class="check-to-delete" type="checkbox" id-poule="{{ poule.id }}"></input>
+            </div>
+            <div class="equipes-poule" id-poule="{{ poule.id }}">
+                <ul class="connectedSortable sortable">
+                    {% for equipe in poule.equipe %}
+                    <li class="ui-state-default" eq-id= {{ equipe.id }}>{{ equipe.nomEquipe }}</li>   
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="match-title">Jeux:</div>
+            <div class="container match-poule">
+                {% for jeu in poule.jeus %}
+                <div class="row row-match" jeu-id="{{ jeu.id}}">
+                    {% for eqA in jeu.equipeA %}
+                    <div class="col-lg-3" eq-id="{{eqA.id}}">{{eqA.nomEquipe }}</div>
+                    {% endfor %}
+                    <input type="text" class="col-lg-2 point-equipe-a" value="{{jeu.pointEqA}}">
+                    <input type="text" class="col-lg-2 point-equipe-b" value="{{jeu.pointEqB}}">
+                    {% for eqB in jeu.equipeB %}
+                    <div class="col-lg-3" eq-id="{{eqB.id}}">{{eqB.nomEquipe }}</div>
+                    {% endfor %}
+                    <button type="button" class="col-lg-2 btn-update-point" jeu-id="{{jeu.id}}">Update</button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+    </div>
+    
+
+</div>
+<script>
+    $('.btn-generer-jeux').click(function(){
+        var listPoules = $('.equipes-poule');
+        var listPoulesId = [];
+        for (var i = 0; i < listPoules.length; i++){
+            listPoulesId.push($(listPoules[i]).attr('id-poule'));
+        }
+        var jeuxPoules = [];
+        for (k = 0; k < listPoulesId.length; k++){
+            var idPoule = listPoulesId[k];
+            var jeuxPoule = {};
+            var listEquipes = $('.equipes-poule[id-poule='+idPoule+']').find('li');
+            //Créer list des id des équipes
+            var listEquipesId = [];
+            for (i = 0; i < listEquipes.length; i++) {
+                listEquipesId.push($(listEquipes[i]).attr('eq-id'));
+            }
+            //Les jeux dans chaque poule.
+            var jeux = [];
+            for (i = 0; i < listEquipesId.length; i++) {
+                for (j = 0; j < listEquipesId.length; j++) {
+                    var jeu = {};
+                    if (i < j){
+                        jeu = {equipeA: listEquipesId[i],equipeB: listEquipesId[j]};
+                        jeux.push(jeu);
+                    }
+                }
+            }
+            //Les jeux dans un Poule
+            jeuxPoule = [{idPoule: idPoule}, {jeux: jeux}]
+            //Les jeux dans les poules
+            jeuxPoules.push(jeuxPoule);
+        }
+
+        //console.log(jeuxPoules);
+        let dataSent = JSON.stringify(jeuxPoules);
+        $.ajax({
+            method: "POST",
+            url: "/admin/poule", 
+            data: dataSent, 
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            success: function (data, textStatus, xhr){
+                location.reload();
+            }
+        })
+
+    })
+    $('.btn-delete-poules').click(function(){
+        var listPoulesToDelete = $('.check-to-delete:checkbox:checked');
+        var listPoulesIdToDelete = [];
+        for (i= 0; i < listPoulesToDelete.length; i++){
+            listPoulesIdToDelete.push($(listPoulesToDelete[i]).attr('id-poule'));
+        }
+        if (listPoulesIdToDelete.length > 0){
+            //console.log(listPoulesIdToDelete);
+            let dataSent = JSON.stringify(listPoulesIdToDelete);
+            $.ajax({
+                method: "DELETE",
+                url: "/admin/delete/poule", 
+                data: dataSent, 
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (data, textStatus, xhr){
+                    location.reload();
+                }
+            })
+        }
+        else {
+            alert('Veuillez choisir poule(s) à supprimer')
+        }
+    })
+    $('.btn-add-poule').click(function() {
+        var tourId = $('.tour-id').text();
+        var nomPoule = $('#new-poule-name').val();
+        console.log(nomPoule, tourId);
+        let dataSent = JSON.stringify({tourId: tourId, nomPoule: nomPoule});
+        $.ajax({
+                method: "POST",
+                url: "/admin/create/poule", 
+                data: dataSent, 
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (data, textStatus, xhr){
+                    location.reload();
+                }
+            })
+    })
+    $('.btn-update-poules').click(function(){
+        var listPoules = $('.equipes-poule');
+        var listPoulesId = [];
+        for (var i = 0; i < listPoules.length; i++){
+            listPoulesId.push($(listPoules[i]).attr('id-poule'));
+        }
+        var equipesPoules = [];
+        for (k = 0; k < listPoulesId.length; k++){
+            var idPoule = listPoulesId[k];
+            var listEquipes = $('.equipes-poule[id-poule='+idPoule+']').find('li');
+            //Créer list des id des équipes
+            var listEquipesId = [];
+            for (i = 0; i < listEquipes.length; i++) {
+                listEquipesId.push($(listEquipes[i]).attr('eq-id'));
+            }
+            //Les equipe dans un poule
+            equipesPoule = [{idPoule: idPoule}, {equipes: listEquipesId}]
+            //Les equipes dans les poules
+            equipesPoules.push(equipesPoule);
+        }
+        let dataSent = JSON.stringify(equipesPoules);
+        $.ajax({
+            method: "PATCH",
+            url: "/admin/update/poule", 
+            data: dataSent, 
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            success: function (data, textStatus, xhr){
+                location.reload();
+            }
+        })
+        console.log(equipesPoules)
+
+    })
+    $('.btn-update-point').click(function(){
+        
+        var jeuId = $(this).attr('jeu-id');
+        var pointEqA = $(this).parents().find('.row.row-match[jeu-id='+jeuId+']').find('.point-equipe-a').val();
+        var pointEqB = $(this).parents().find('.row.row-match[jeu-id='+jeuId+']').find('.point-equipe-b').val();
+        //console.log(jeuId, $(this).parents().find('.row.row-match[jeu-id='+jeuId+']').find('.point-equipe-a').val(), pointEqA);
+        
+        if (pointEqA === pointEqB){
+            alert('Mal saisir');
+        }
+        else {
+            var dataSent = JSON.stringify({pointEqA: pointEqA, pointEqB: pointEqB});
+            $.ajax({
+                method: "PATCH",
+                url: "/admin/jeu/"+jeuId, 
+                data: dataSent, 
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (data, textStatus, xhr){
+                    location.reload();
+                }
+            })
+        }
+        
+    })
+
+
+</script>
+
+
+{% endblock %}

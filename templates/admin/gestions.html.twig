@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Admin: Gestion les evenements{% endblock %}
+
+{% block body %}
+<div class="container">
+    <h2>Les événements dans de notre système</h2>
+    <a href="/admin/gestion/new/evenement"><i class='fas fa-plus'></i></a>
+    <table class="table table-striped">
+      <thead>
+          <tr>
+            <th>Id</th>
+            <th>Nom Evénement</th>
+            <th>Date Début</th>
+            <th>Date Terminé</th>
+            <th>Modifier</th>
+            <th>Supprimer</th>
+          </tr>
+      </thead>
+      <tbody>
+        {% for ev in events %}
+        <tr>
+          <td ><a href="/evenement/{{ ev.id }}">{{ ev.id }}</a></td>
+          <td><a href="/evenement/{{ ev.id }}">{{ ev.nomEv  }}</td>
+          <td>{{ ev.dateDebut|date('Y-m-d')  }}</td>
+          <td>{{ ev.dateTermn|date('Y-m-d') }}</td>
+          <td><a href="/admin/gestion/edit/{{ ev.id }}"><i class='fas fa-edit'></i></a></td>
+          <td><a href="#" id-ev="{{ ev.id }}"><i class='fas fa-trash-alt delete-event' id-ev="{{ ev.id }}"></i></a></td>
+        </tr>
+        
+        {% endfor %}
+      </tbody>
+    </table>
+
+    
+
+  </div>
+  <script>
+    $('.delete-event').click(function(){
+      
+      var evenId = $(this).attr('id-ev');
+      var result = confirm("Voulez-vous supprimer?");
+      if (result) {
+        var dataSent = JSON.stringify({delete:true});
+        $.ajax({
+          method: "DELETE",
+          url: "/admin/delete/event/"+evenId, 
+          data: dataSent, 
+          dataType: "json",
+          contentType: "application/json; charset=utf-8",
+          success: function (data, textStatus, xhr){
+              location.reload();
+          }
+       }) 
+      }
+
+    })
+  </script>
+  {% endblock %}

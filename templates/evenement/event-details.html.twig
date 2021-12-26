@@ -1,0 +1,70 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Events: {{ event.nomEv }}{% endblock %}
+
+{% block body %}
+<style>
+.make-line{
+    border: 2px solid;
+    border-color: red;
+}
+</style>
+<div class="container">
+    <div class="row">
+        <h2 class="col-md-12 col-sm-12 col-lg-12">{{ event.nomEv }}</h2>
+    </div>
+    <div class="row list-tournois"><h3>Liste des tournois:</h3></div>
+    {% for tournoi in tournois %}
+    <div class="row tournois">
+        <h3 class="nom-tournois">{{ tournoi.nomTournoi }}</h3><br>
+    </div>
+    <div class="row make-line"></div>
+        {% for tour in tournoi.tours %}
+        {% if tour %}
+            <div class="row tours">
+            <h4>Tours: </h4> <span>
+            <h4>{{ tour.nomTour }}</h4>
+            </div>
+                {% for poule in tour.poules %}
+                <h5>{{ poule.nomPoule }}</h5>
+                <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Equipe 1</th>
+                                <th>Point Equipe 1</th>
+                                <th>Point Equipe 2</th>
+                                <th>Equipe 2</th>
+                            </tr>
+                        </thead>
+                    {% for jeu in poule.jeus %}
+                        
+                        <tbody>
+                            <tr>
+                            <td >{{ jeu.id }}</td>
+                            {% for eqA in jeu.equipeA %}
+                            <td>{{ eqA.nomEquipe }}</td>
+                            {% endfor %}
+                            <td>{{ jeu.pointEqA }}</td>
+                            <td>{{ jeu.pointEqB }}</td>
+                            {% for eqB in jeu.equipeB %}
+                            <td>{{ eqB.nomEquipe }}</td>
+                            {% endfor %}
+                            </tr> 
+                        </tbody>       
+                    {% endfor %}
+                </table>
+            {% endfor %}
+        {% else %}
+            <h3 class="nom-tournois">Pas de tours dans ce tournoi!</h3>
+        {% endif %}  
+        {% endfor %} 
+    {% endfor %}
+    
+
+
+
+
+</div>
+
+{% endblock %}

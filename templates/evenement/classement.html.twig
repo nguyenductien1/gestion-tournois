@@ -1,0 +1,157 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block body %}
+<style>
+    .btn-show-classment{
+        margin-top: 30px;
+    }
+</style>
+
+<div class="container">
+    <div class="row select-event-tournoi-tour">
+        <div class="col-lg-3 col-md-3 col-sm-12 select-event">
+            <label for="event">Evénements</label>
+            <select class="form-control" id="event">
+                <option>Choisir un événement</option>
+                {% for event in events %}
+                <option value="{{ event.id }}">{{ event.nomEv }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-lg-3 col-md-3 col-sm-12 select-tournoi">
+            <label for="tournoi">Tournois</label>
+            <select class="form-control" id="tournoi">
+                <option class="empty-tournoi">--------</option>
+            </select>
+        </div>
+        <div class="col-lg-3 col-md-3 col-sm-12 select-tour">
+            <label for="tour">Tours</label>
+            <select class="form-control" id="tour">
+                <option class="empty-tour">--------</option>
+            </select>
+        </div>
+        <div class="col-lg-3 col-md-3 col-sm-12 show-classement text-center">
+            <button type="button" class="btn btn-primary btn-show-classment">Afficher Classement</button>
+        </div>
+
+
+    </div>
+    <div class="classement">
+        <div class="container table-name" >
+        </div>
+    </div>
+
+
+</div>
+<script>
+//Récupérer les tournois dans l'événement choisi
+$('#event').on('change', function(){
+    var eventId = this.value;
+    $.ajax({
+        method: "GET",
+        url: "/classement/evenement/"+eventId,  
+        dataType: "json",
+        contentType: "application/json; charset=utf-8",
+        success: function (data, textStatus, xhr){
+            $('#tournoi').empty();
+            $('#tournoi').append(new Option('Choisir un tournoi', 'emtpy'));
+            for (i=0; i < data.length; i++){
+                $('#tournoi').append(new Option(data[i]['nomTournoi'], data[i]['id'])
+            )
+            }
+        }
+    })
+})
+
+//Récupérer les tours dans le tournoi choisi
+$('#tournoi').on('change', function(){
+    var tournoiId = this.value;
+    $.ajax({
+        method: "GET",
+        url: "/classement/tournoi/"+tournoiId,  
+        dataType: "json",
+        contentType: "application/json; charset=utf-8",
+        success: function (data, textStatus, xhr){
+            $('#tour').empty();
+            $('#tour').append(new Option('Choisir un tour', 'emtpy'));
+            for (i=0; i < data.length; i++){
+                $('#tour').append(new Option(data[i]['nomTour'], data[i]['id'])
+            )
+            }
+        }
+    })
+})
+
+$('.btn-show-classment').click(function(){
+    var tourId = $('#tour').val();
+    $.ajax({
+        method: "GET",
+        url: "/classement/data/"+tourId,  
+        dataType: "json",
+        contentType: "application/json; charset=utf-8",
+        success: function (data, textStatus, xhr){
+           //console.log(data);
+           var head = createHeadeTable();
+           for (var i=0; i<data.length; i++){
+                $('.table-name').append(
+                    $('<h3>', {idpoule: data[i]['pouleID'], class: "nom-poule", text: data[i]['pouleName']}),
+                    $('<table class="table table-striped">', {id: data[i]['pouleID'], class:'table table-striped'}).append(head).append(`<tbody class="row-equipe-${i}">`)   
+                );
+                
+                let data_sorted = data[i]['results'].sort(function(a,b){
+                    if (a.point > b.point) return -1;
+                    if (a.point < b.point) return 1;
+                    if (a.diff < b.diff) return -1;
+                    if (a.diff > b.diff) return 1;
+                })
+                
+                for (j = 0; j < data_sorted.length; j++){
+                    
+                    var cls = j+1;
+                    var nomEq = data_sorted[j]['nomEquipe'];
+                    var jeux = data_sorted[j]['jeux'];
+                    var point = data_sorted[j]['point'];
+                    var gagne = data_sorted[j]['gagne'];
+                    var perdu = data_sorted[j]['perdu'];
+                    var setGagne = data_sorted[j]['set_gagne'];
+                    var setPerdu = data_sorted[j]['set_perdu'];
+                    var Diff = data_sorted[j]['diff'];
+                    $(`tbody.row-equipe-${i}`)
+                    .append($('<tr>')
+                        .append($('<th>',{text:cls}))
+                        .append($('<th>',{text:nomEq}))
+                        .append($('<th>',{text:jeux}))
+                        .append($('<th>',{text:point}))
+                        .append($('<th>',{text:gagne}))
+                        .append($('<th>',{text:perdu}))
+                        .append($('<th>',{text:setGagne}))
+                        .append($('<th>',{text:setPerdu}))
+                        .append($('<th>',{text:Diff}))
+                    )     
+                }
+           }
+        }
+    })
+
+    function createHeadeTable() {
+        return '<thead>'+
+                    '<tr>'+
+                        '<th>Classement</th>'+
+                        '<th>Nom équipe</th>'+
+                        '<th>Jeux</th>'+
+                        '<th>Point</th>'+
+                        '<th>Gagné</th>'+
+                        '<th>Perdu</th>'+
+                        '<th>Set gagnée</th>'+
+                        '<th>Set perdu</th>'+
+                        '<th>Diff</th>'+
+                    '</tr>'+
+                '</thead>';
+    } 
+    
+});
+</script>
+
+{% endblock %}

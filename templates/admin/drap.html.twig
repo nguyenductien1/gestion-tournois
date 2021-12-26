@@ -1,0 +1,56 @@
+{% for tour in tournoi.tours %}
+            <div class="row tours">
+            <h4>Tours: </h4> <span>
+            <h4>{{ tour.nomTour }}</h4>
+            </div>
+                {% for poule in tour.poules %}
+                <h5>{{ poule.nomPoule }}</h5>
+                <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Equipe 1</th>
+                                <th>Point Equipe 1</th>
+                                <th>Point Equipe 2</th>
+                                <th>Equipe 2</th>
+                            </tr>
+                        </thead>
+                    {% for jeu in poule.jeus %}
+                        
+                        <tbody>
+                            <tr>
+                            <td >{{ jeu.id }}</td>
+                            {% for eqA in jeu.equipeA %}
+                            <td>{{ eqA.nomEquipe }}</td>
+                            {% endfor %}
+                            <td><input type="text" value={{ jeu.pointEqA }}></input></td>
+                            <td><input type="text" value={{ jeu.pointEqB }}></input></td>
+                            {% for eqB in jeu.equipeB %}
+                            <td>{{ eqB.nomEquipe }}</td>
+                            {% endfor %}
+                            </tr> 
+                        </tbody>       
+                    {% endfor %}
+                </table>
+            {% endfor %} 
+            <div class="row make-line"></div>
+        {% endfor %} 
+
+        <div class="panel panel-primary" id="result_panel">
+            <div class="panel-heading"><h3 class="panel-title">Liste des équipes dans le tournoi:</h3>
+            </div>
+            <div class="panel-body">
+                <ul class="list-group">
+                    {% for equipe in tournoi.equipes %}
+                    <li class="list-group-item equipe-tour" eq-id="{{ equipe.id }}"><strong>{{ equipe.nomEquipe }} </strong>
+                        <span class="pull-right">
+                            <span class="btn btn-xs btn-default btn-delete-from-tournois">
+                                <button class="delete-equipe-tournoi fas fa-trash-alt" aria-hidden="true"></button>
+                            </span>
+                        </span>
+                    </li>
+            
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>

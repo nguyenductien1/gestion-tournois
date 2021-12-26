@@ -1,0 +1,162 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Admin: {{ event.nomEv }}{% endblock %}
+
+{% block body %}
+<style>
+.make-line{
+    border: 2px solid;
+    border-color: red;
+}
+.event-details{
+    margin-top: 10px;
+}
+.row.title-list-tournois {
+    margin-top: 10px;
+    justify-content: center;
+}
+.button-mod-del {
+    margin-top: 10px;
+}
+.container .button-create{
+    margin-top: 10px;
+}
+.event-id{
+    visibility: hidden;
+}
+.container .new-tournoi{
+    visibility: hidden;
+}
+
+</style>
+<div class="container">
+    <div class="container event-details-container">
+        <div class="row event-details">
+            <label for="event-name" class="col-md-3 col-sm-12 col-lg-2" >Nom Evenement: </label>
+            <input id="event-name" class="col-md-3 col-sm-12 col-lg-3" type="text" value = "{{ event.nomEv }}"></input>
+
+            <label for="type-game">Type des jeux:</label>
+            <select class="form-control col-md-3 col-sm-12 col-lg-3" id="type-game">
+                {% for typeJeu in types %}
+                    {% for type in event.type %}
+                        {% if type.id == typeJeu.id %}
+                            <option value="{{ type.id }}" selected>{{ type.type }}</option>
+                        {% else %}
+                            <option value="{{ type.id }}">{{ type.type }}</option>
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+            </select>
+        </div>
+        <div class="row event-details">
+            <label for="event-start-date" class="col-md-3 col-sm-12 col-lg-2">Date Début: </label>
+            <input id="event-start-date" class="col-md-3 col-sm-12 col-lg-3" type="date" value = "{{ event.dateDebut|date('Y-m-d') }}"></input>
+            <label for="event-end-date" class="col-md-3 col-sm-12 col-lg-2">Date Terminé: </label>
+            <input id="event-end-date" class="col-md-3 col-sm-12 col-lg-3" type="date" value = "{{ event.dateTermn|date('Y-m-d') }}"></input>
+        </div>
+        <div class="row event-details">
+            <button type="button" class="btn-update-event-info col-lg-1 col-sm-12 col-md-1 btn-sm btn-primary" ev-id="{{ event.id }}"><i class="fa fa-check" aria-hidden="true"></i>Update</button>
+        </div>
+    </div>
+    
+    <div class="row title-list-tournois" class= "col-lg-12 col-sm-12 col-md-12"><h3>Liste des tournois:</h3></div>
+            
+    <div class="container button-mod-del" id="list-tournois">
+    {% for tournoi in tournois %}
+        <div class="row list-tournois" id="{{tournoi.id}}">
+            <h5 class="nom-tournois col-lg-3 col-sm-12 col-md-3">{{ tournoi.nomTournoi }}</h5>
+            <button type="button" class="btn-edit-tournoi col-lg-1 col-sm-12 col-md-1 btn-sm btn-primary"><i class='fas fa-edit'></i></button>
+            <button type="button" class="btn-delete-tournoi col-lg-1 col-sm-12 col-md-1 btn-sm btn-danger"><i class='fas fa-trash-alt'></i></button>
+        </div>
+    {% endfor %}
+    </div>
+    <div class="event-id">{{ event.id }}</div>
+    <div class="container new-tournoi">
+        <div class="row">
+            <div class="new-tournoi-name input-group mb-3 col-lg-10">
+                <div class="input-group-prepend">
+                    <span class="input-group-text" id="tournoi-name-prefix">Nom tournoi</span>
+                </div>
+                <input type="text" class="form-control" aria-label="Nom tournoi" aria-describedby="tournoi-name" id="new-tournoi-name" placeholder="Ex: Jeune moins 17 ans">
+                <div class="input-group-append">
+                    <button class="btn btn-outline-secondary btn-add-tournoi" type="button">Ajouter</button>
+                </div>
+            </div>  
+        </div>
+    </div>
+
+    <div class="container button-create">
+        <div class="row">
+            <button type="button" class="btn-create-tournoi col-lg-2 col-sm-12 col-md-2 btn-sm btn-success"><i class='fas fa-plus'> Créer tournoi</i></button>
+        </div>
+    </div>
+
+</div>   
+
+<script type="text/javascript">
+{# On click ajouter pour créer nouveau tournoi #}
+
+$('.btn-add-tournoi').click(function(){
+    var eventID = $('.event-id').text();
+    var nomTournoi = $('#new-tournoi-name').val();
+    let dataSent = JSON.stringify({evId: eventID, nomTournoi: nomTournoi});
+    $.ajax({
+        method: "POST",
+        url: "/admin/tournoi", 
+        data: dataSent, 
+        dataType: "json",
+        contentType: "application/json; charset=utf-8",
+        success: function (data, textStatus, xhr){
+            $("#list-tournois").load(location.href + " #list-tournois");
+        }
+    })
+})
+$('.btn-delete-tournoi').click(function(){
+    var eventID = $('.event-id').text();
+    var tournoiId = $(this).parent().attr('id');
+    let dataSent = JSON.stringify({tournoiId: tournoiId, eventId: eventID});
+    $.ajax({
+        method: "DELETE",
+        url: "/admin/tournoi", 
+        data: dataSent, 
+        dataType: "json",
+        contentType: "application/json; charset=utf-8",
+        success: function (data, textStatus, xhr){
+            location.reload();
+        }
+    })
+    
+})
+$('.btn-create-tournoi').click(function(){
+    document.querySelector('.new-tournoi').style.visibility = 'visible';
+})
+
+$('.btn-edit-tournoi').click(function(){
+    var tournoiId = $(this).parent().attr('id');
+    window.location.href = "/admin/gestion/edit/tournoi/"+tournoiId
+})
+
+$('.btn-update-event-info').click(function(){
+    var eventId = $(this).attr('ev-id');
+    var nomEvent = $('#event-name').val();
+    var dateDebut = $('#event-start-date').val();
+    var dateTermn = $('#event-end-date').val();
+    var typeJeuId = $('#type-game').val();
+    var dataSent = JSON.stringify({nomEvent: nomEvent, dateDebut: dateDebut, dateTermn: dateTermn, typeJeuId: typeJeuId})
+    $.ajax({
+        method: "PATCH",
+        url: "/admin/update/event/"+eventId, 
+        data: dataSent, 
+        dataType: "json",
+        contentType: "application/json; charset=utf-8",
+        success: function (data, textStatus, xhr){
+           location.reload();
+        }
+      })
+})
+
+
+</script>
+
+
+{% endblock %}

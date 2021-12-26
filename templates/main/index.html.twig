@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Bienvenue aux tournois{% endblock %}
+
+{% block body %}
+<style>
+    .card{
+    margin-left: 20px;
+    margin-top: 20px;
+    }
+    .row{
+        justify-content: center;
+    }
+    .card-img-top{
+        height: 160px;
+    }
+</style>
+    <div class="container-fluid">
+    <div class="row">
+        <div class="card" style="width: 18rem;">
+        <img class="card-img-top" src="./assets/img/event-thumb.jpg" alt="evenement">
+        <div class="card-body">
+            <h5 class="card-title">Evénement</h5>
+            <p class="card-text">Consultez les événements.</p>
+            <a href="/evenement" class="btn btn-primary">Allez</a>
+        </div>
+        </div>
+        
+        <div class="card" style="width: 18rem;">
+        <img class="card-img-top" src="./assets/img/classement-thumb.jpeg" alt="classment">
+        <div class="card-body">
+            <h5 class="card-title">Résultat</h5>
+            <p class="card-text">Consultez résultat des matchs</p>
+            <a href="/classement" class="btn btn-primary">Allez</a>
+        </div>
+        </div>
+        
+        </div>
+    </div>
+    </div>
+
+    
+
+{% endblock %}

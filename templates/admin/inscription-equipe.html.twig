@@ -1,0 +1,83 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Admin: {{ title }}{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="row"><h3>Créer nouveau Club:</h3></div>
+    <div class="row row-club">
+        <div class="new-club input-group mb-3 col-lg-10">
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="new-club-prefix">Nom Club</span>
+            </div>
+            <input type="text" class="form-control" aria-label="Nom Club" aria-describedby="club-name" id="new-club-name" placeholder="Ex: Club de Sète">
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary btn-add-club" type="button">Ajouter</button>
+            </div>
+        </div> 
+    </div>
+    <div class="row"><h3>Créer nouveau Equipe:</h3></div>
+    <div class="row row new-equipe">
+        <form>
+            <div class="form-group">
+                <div class="new-equipe input-group mb-3 col-lg-10">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" id="new-club-prefix">Nom Equipe</span>
+                    </div>
+                    <input type="text" class="form-control" aria-label="Nom Equipe" aria-describedby="equipe-name" id="new-equipe-name" placeholder="Ex: Equipe de scièce">
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary btn-add-equipe" type="button">Ajouter</button>
+                    </div>
+                </div> 
+            </div>
+            <div class="form-group">
+                <label for="select-club">Chosir un club</label>
+                <select class="form-control" id="select-club">
+                {% for club in clubs %}
+                <option value="{{ club.id}}">{{ club.nomClub }}</option>
+                {% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
+    
+</div>
+
+<script>
+$('.btn-add-club').click(function() {
+    var nomClub = $('#new-club-name').val();
+    var dataSent = JSON.stringify({nomClub:nomClub});
+    $.ajax({
+        method: "POST",
+        url: "/admin/create/club", 
+        data: dataSent, 
+        dataType: "json",
+        contentType: "application/json; charset=utf-8",
+        success: function (data, textStatus, xhr){
+            location.reload();
+        }
+    })
+
+})
+
+$('.btn-add-equipe').on('click', function(){
+    var nomEquipe = $('#new-equipe-name').val();
+    var clubId = $('#select-club').val();
+    dataSent = JSON.stringify({nomEquipe:nomEquipe, clubId:clubId});
+     $.ajax({
+        method: "POST",
+        url: "/admin/create/equipe", 
+        data: dataSent, 
+        dataType: "json",
+        contentType: "application/json; charset=utf-8",
+        success: function (data, textStatus, xhr){
+            location.reload();
+        }
+    })
+})
+
+
+
+</script>
+
+{% endblock %}

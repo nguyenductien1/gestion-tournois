@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tournois: Liste des événements{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h2>Les événements dans de notre système</h2>
+    
+    <table class="table table-striped">
+      <thead>
+          <tr>
+            <th>Id</th>
+            <th>Nom Evénement</th>
+            <th>Date Début</th>
+            <th>Date Terminé</th>
+          </tr>
+      </thead>
+      <tbody>
+        {% for ev in events %}
+        <tr>
+          <td ><a href="/evenement/{{ ev.id }}">{{ ev.id }}</a></td>
+          <td><a href="/evenement/{{ ev.id }}">{{ ev.nomEv  }}</td>
+          <td>{{ ev.dateDebut|date('Y-m-d')  }}</td>
+          <td>{{ ev.dateTermn|date('Y-m-d') }}</td>
+        </tr>
+        
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% endblock %}
